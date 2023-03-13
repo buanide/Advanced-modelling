@@ -7,10 +7,52 @@ output: pdf_document
 
 ```{r}
 library("readxl")
-d = read_excel("/home/v/r/vreau/Documents/4A/MA/scooter.xls")
-str(d) # affiche la structure (le type) des données
-summary(d)
+d = read_excel("/home/v/r/vreau/Documents/4A/MA/mod_av_projet_scooter/scooter.xls")
+#class(d)
+d = as.data.frame(d)
+#str(d) # affiche la structure (le type) des données
+#summary(d)
 ```
+
+```{r}
+head(d)
+
+# préparation de données
+rownames(d)<-d$ident
+d<-d[,-1]
+head(d)
+```
+
+
+```{r}
+# Transformation des types des variables
+d$sexe = as.factor(d$sexe)
+d$âge = as.factor(d$âge)
+d$CSP = as.factor(d$CSP)
+d$`type-cylindrée` = as.factor(d$`type-cylindrée`)
+d$`type-utilisation` = as.factor(d$`type-utilisation`)
+d$`critère-esthétique`= as.factor(d$`critère-esthétique`)
+d$`note-satisfaction`= as.numeric(d$`note-satisfaction`)
+
+dnum = d[,7:25]
+head(d)
+```
+
+
+```{r}
+# Transformation des types des variables
+for (i in 2:ncol(d)){
+  d[,names(d)[i]] = as.factor(d[,names(d)[i]])
+}
+```
+
+
+```{r}
+str(d)
+#summary(d)
+```
+
+
 ```{r}
 stat_uni = function(x)
 {
@@ -23,11 +65,146 @@ stat_uni = function(x)
            sd(x, na.rm=TRUE)))
 }
 
-res_stat_uni = apply(dWithoutType, 2, "stat_uni")
+res_stat_uni = apply(dnum, 2, "stat_uni")
 row.names(res_stat_uni) = c("Nobs", "N_manq.", "Min", "Max", "Moyenne", "Mediane", "Ecart-type")
 
 #print(round(t(res_stat_uni),3))
 knitr::kable(round(t(res_stat_uni),3), format = "markdown", align = 'r')
 ```
 
+### Histogrames des variables
+```{r}
+par(mfrow=c(2,3))
+for(i in 1:ncol(dnum))
+ {
+ hist(dnum[,names(dnum)[i]], 
+      xlab = names(dnum)[i], 
+      ylab = "fréquence", 
+      col = "blue", 
+      main = names(dnum)[i])  
+ }
+```
+## Statistiques bivariées 
+On calcul le rapport de corrélation entre la variable sexe et les variables quantitatives.
+```{r}
+#install.packages('BioStatR')
+library('BioStatR')
+res_cor = list()
+for (i in 1:ncol(dnum)) {
+  res_cor <- append(res_cor, eta2(dnum[,i], d$sexe), i-1) 
+}
+res_cor <- as.data.frame(res_cor)
+colnames(res_cor) <- c("note_satisf",
+                       "magasin",
+                       "marque", 
+                       "esthetique", 
+                       "prix",
+                       "confort-pilote",
+                       "confort-passager",
+                       "dimensions",
+                       "freinage",
+                       "cylindree",
+                       "antivol",
+                       "tableau-de-bord",
+                       "accessoires",
+                       "rangement",
+                       "propulsion",
+                       "refroidissement",
+                       "tablier-avant",
+                       "feux",
+                       "fiabilite-moteur")
+row.names(res_cor)="sexe"
+knitr::kable(round(res_cor,3), format = "markdown", align = 'c')
+```
+
+### Boites à  moustaches
+Pour démontrer la colinéarité entre une variable qualitative et une quantitative les boxplots sont utiles. Ici, on remarque que pour certaines variables, les boxplots sont disjointes ce qui indique une colinéarité entre les deux variables. On retient alors length, face_height et face_breadth.
+```{r}
+par(mfrow=c(2,3))
+for(i in 1:ncol(dnum))
+ {
+ boxplot(dnum[,names(dnum)[i]]~d[,names(d)[2]], 
+         xlab = names(d)[2], 
+         ylab = names(dnum)[i], 
+         col = "green")  
+ }
+title("Boites à  moustaches", outer=TRUE, line=-1)
+```
+
+```{r}
+par(mfrow=c(2,3))
+for(i in 1:ncol(dnum))
+{
+plot(dnum[,i], d[,2], 
+     xlab = names(dnum)[i], 
+     ylab = "sexe", 
+     pch=16, 
+     main = paste("sexe vs", names(dnum)[i]))
+legend("left", paste("r = ", round(res_cor[i], 3)))
+}
+```
+
+```{r}
+# install.packages("Factoshiny")
+library(Factoshiny)
+Factoshiny(d)
+```
+
+```{r}
+library(ade4)
+library(FactoMineR)
+library(factoextra)
+library(ggplot2)
+res.famd <- FAMD(d, ncp=5, graph = FALSE)
+print(res.famd)
+```
+
+```{r}
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val)
+fviz_screeplot(res.famd)
+```
+
+```{r}
+var <- get_famd_var (res.famd)
+var
+```
+
+```{r}
+# Coordonnées des variables
+head(var$coord)
+# Cos2: qualité de représentation
+head(var$cos2)
+# Contributions aux dimensions
+head(var$contrib)
+```
+
+```{r}
+# Graphique des variables
+fviz_famd_var (res.famd, repel = TRUE)
+# Contribution à la première dimension
+fviz_contrib (res.famd, "var", axes = 1)
+# Contribution à la deuxième dimension
+fviz_contrib (res.famd, "var", axes = 2)
+```
+
+```{r}
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+quanti.var 
+```
+
+```{r}
+fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
+              col.var = "black")
+
+fviz_famd_var(res.famd, "quanti.var", col.var = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+```
+
+http://www.sthda.com/french/articles/38-methodes-des-composantes-principales-dans-r-guide-pratique/76-afdm-analyse-factorielle-des-donnees-mixtes-avec-r-l-essentiel/
+
+```{r}
+hcpc=HCPC(res.famd,nb.clust=5,proba=1)
+```
 
