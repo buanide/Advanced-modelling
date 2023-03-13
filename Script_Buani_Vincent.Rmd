@@ -1,0 +1,33 @@
+---
+title: "PROJ 8"
+author: "Reau Vincent"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r}
+library("readxl")
+d = read_excel("/home/v/r/vreau/Documents/4A/MA/scooter.xls")
+str(d) # affiche la structure (le type) des données
+summary(d)
+```
+```{r}
+stat_uni = function(x)
+{
+  return(c(length(na.omit(x)),
+           length(x[is.na(x)]),      
+           min(x, na.rm=TRUE), 
+           max(x, na.rm=TRUE), 
+           mean(x, na.rm=TRUE),
+           median(x, na.rm=TRUE),
+           sd(x, na.rm=TRUE)))
+}
+
+res_stat_uni = apply(dWithoutType, 2, "stat_uni")
+row.names(res_stat_uni) = c("Nobs", "N_manq.", "Min", "Max", "Moyenne", "Mediane", "Ecart-type")
+
+#print(round(t(res_stat_uni),3))
+knitr::kable(round(t(res_stat_uni),3), format = "markdown", align = 'r')
+```
+
+
