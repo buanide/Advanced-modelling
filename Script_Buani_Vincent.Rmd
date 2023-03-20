@@ -1,6 +1,6 @@
 ---
-title: "PROJ 8"
-author: "Reau Vincent"
+title: "PROJET 8: Scooter"
+author: "Reau Vincent - Buani "
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
@@ -10,40 +10,26 @@ library("readxl")
 d = read_excel("/home/v/r/vreau/Documents/4A/MA/mod_av_projet_scooter/scooter.xls")
 #class(d)
 d = as.data.frame(d)
-#str(d) # affiche la structure (le type) des données
-#summary(d)
+str(d) # affiche la structure (le type) des données
 ```
 
 ```{r}
-head(d)
-
 # préparation de données
 rownames(d)<-d$ident
 d<-d[,-1]
-head(d)
+#head(d)
 ```
-
-
 ```{r}
 # Transformation des types des variables
-d$sexe = as.factor(d$sexe)
-d$âge = as.factor(d$âge)
-d$CSP = as.factor(d$CSP)
-d$`type-cylindrée` = as.factor(d$`type-cylindrée`)
-d$`type-utilisation` = as.factor(d$`type-utilisation`)
-d$`critère-esthétique`= as.factor(d$`critère-esthétique`)
-d$`note-satisfaction`= as.numeric(d$`note-satisfaction`)
-
-dnum = d[,7:25]
-head(d)
-```
-
-
-```{r}
-# Transformation des types des variables
-for (i in 2:ncol(d)){
+for (i in 1:6){
   d[,names(d)[i]] = as.factor(d[,names(d)[i]])
 }
+d$`note-satisfaction`= as.numeric(d$`note-satisfaction`)
+```
+
+```{r}
+# création d'un dataframe avec uniquement les variables quantitatives
+dnum = d[,7:25]
 ```
 
 
@@ -66,7 +52,13 @@ stat_uni = function(x)
 }
 
 res_stat_uni = apply(dnum, 2, "stat_uni")
-row.names(res_stat_uni) = c("Nobs", "N_manq.", "Min", "Max", "Moyenne", "Mediane", "Ecart-type")
+row.names(res_stat_uni) = c("Nobs", 
+                            "N_manq.", 
+                            "Min", 
+                            "Max", 
+                            "Moyenne", 
+                            "Mediane", 
+                            "Ecart-type")
 
 #print(round(t(res_stat_uni),3))
 knitr::kable(round(t(res_stat_uni),3), format = "markdown", align = 'r')
@@ -84,6 +76,7 @@ for(i in 1:ncol(dnum))
       main = names(dnum)[i])  
  }
 ```
+
 ## Statistiques bivariées 
 On calcul le rapport de corrélation entre la variable sexe et les variables quantitatives.
 ```{r}
@@ -118,13 +111,14 @@ knitr::kable(round(res_cor,3), format = "markdown", align = 'c')
 ```
 
 ### Boites à  moustaches
-Pour démontrer la colinéarité entre une variable qualitative et une quantitative les boxplots sont utiles. Ici, on remarque que pour certaines variables, les boxplots sont disjointes ce qui indique une colinéarité entre les deux variables. On retient alors length, face_height et face_breadth.
+Pour démontrer la colinéarité entre une variable qualitative et une quantitative les boxplots sont utiles. Ici, on remarque que pour certaines variables, les boxplots sont disjointes ce qui indique une colinéarité entre les deux variables. On retient alors  
+
 ```{r}
 par(mfrow=c(2,3))
 for(i in 1:ncol(dnum))
  {
- boxplot(dnum[,names(dnum)[i]]~d[,names(d)[2]], 
-         xlab = names(d)[2], 
+ boxplot(dnum[,names(dnum)[i]]~d[,names(d)[1]], 
+         xlab = names(d)[1], 
          ylab = names(dnum)[i], 
          col = "green")  
  }
@@ -135,7 +129,7 @@ title("Boites à  moustaches", outer=TRUE, line=-1)
 par(mfrow=c(2,3))
 for(i in 1:ncol(dnum))
 {
-plot(dnum[,i], d[,2], 
+plot(dnum[,i], d[,1], 
      xlab = names(dnum)[i], 
      ylab = "sexe", 
      pch=16, 
@@ -146,9 +140,11 @@ legend("left", paste("r = ", round(res_cor[i], 3)))
 
 ```{r}
 # install.packages("Factoshiny")
-library(Factoshiny)
-Factoshiny(d)
+#library(Factoshiny)
+#Factoshiny(d)
 ```
+
+## Analyse Factorielle des Données Mixtes (AFDM)
 
 ```{r}
 library(ade4)
@@ -164,6 +160,8 @@ eig.val <- get_eigenvalue(res.famd)
 head(eig.val)
 fviz_screeplot(res.famd)
 ```
+
+## Toutes les variables
 
 ```{r}
 var <- get_famd_var (res.famd)
@@ -188,6 +186,8 @@ fviz_contrib (res.famd, "var", axes = 1)
 fviz_contrib (res.famd, "var", axes = 2)
 ```
 
+## Variables quantitatives
+
 ```{r}
 quanti.var <- get_famd_var(res.famd, "quanti.var")
 quanti.var 
@@ -204,7 +204,164 @@ fviz_famd_var(res.famd, "quanti.var", col.var = "contrib",
 
 http://www.sthda.com/french/articles/38-methodes-des-composantes-principales-dans-r-guide-pratique/76-afdm-analyse-factorielle-des-donnees-mixtes-avec-r-l-essentiel/
 
+## Variables qualitatives
+
 ```{r}
-hcpc=HCPC(res.famd,nb.clust=5,proba=1)
+quali.var <- get_famd_var(res.famd, "quali.var")
+quali.var 
 ```
+
+
+```{r}
+fviz_famd_var(res.famd, "quali.var", col.var = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07")
+             )
+```
+
+```{r}
+fviz_famd_ind(res.famd, col.ind = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+```
+
+```{r}
+fviz_mfa_ind(res.famd, 
+             habillage = "sexe", # color by groups 
+             palette = c("#00AFBB", "#E7B800"),
+             addEllipses = TRUE, ellipse.type = "confidence", 
+             repel = TRUE # Avoid text overlapping
+)
+```
+
+
+```{r}
+fviz_mfa_ind(res.famd, 
+             habillage = "âge", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07",  "#FF4EF7",  "#0F4007",  "#0C4E07", "#F03E07"),
+             addEllipses = TRUE, ellipse.type = "confidence", 
+             repel = TRUE # Avoid text overlapping
+)
+```
+
+
+```{r}
+fviz_mfa_ind(res.famd, 
+             habillage = "CSP", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07", "#FF4EF7",  "#0F4007",  "#0C4E07"),
+             addEllipses = TRUE, ellipse.type = "confidence", 
+             repel = TRUE # Avoid text overlapping
+             )
+```
+
+
+```{r}
+fviz_mfa_ind(res.famd, 
+             habillage = "type-cylindrée", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07", "#FF4EF7"),
+             addEllipses = TRUE, ellipse.type = "confidence", 
+             repel = TRUE # Avoid text overlapping
+             )
+```
+
+
+```{r}
+fviz_mfa_ind(res.famd, 
+             habillage = "type-utilisation", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+             addEllipses = TRUE, ellipse.type = "confidence", 
+             repel = TRUE # Avoid text overlapping
+             )
+```
+
+
+```{r}
+fviz_mfa_ind(res.famd, 
+             habillage = "critère-esthétique", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07",  "#FF4EF7",  "#0F4007",  "#0C4E07", "#F03E07"),
+             addEllipses = TRUE, ellipse.type = "confidence", 
+             repel = TRUE # Avoid text overlapping
+             )
+```
+
+
+```{r}
+fviz_ellipses(res.famd, c("sexe", "âge"), repel = TRUE)
+fviz_ellipses(res.famd, 1:6, geom = "point")
+```
+
+## Classification hiérarchique ascendante (CAH)
+http://www.sthda.com/french/articles/38-methodes-des-composantes-principales-dans-r-guide-pratique/78-classification-hierarchique-sur-composantes-principales-l-essentiel/
+
+```{r}
+res.hcpc <- HCPC(res.famd, nb.clust=5, proba=1, graph = F)
+```
+
+### Cas de variables continues
+```{r}
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Taille du text
+          palette = "jco",               # Palette de couleur ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Rectangle autour des groupes
+          rect_border = "jco",           # Couleur du rectangle
+          labels_track_height = 0.8      # Augment l'espace pour le texte
+          )
+```
+
+```{r}
+fviz_cluster(res.hcpc,
+             repel = TRUE,            # Evite le chevauchement des textes
+             show.clust.cent = TRUE, # Montre le centre des clusters
+             palette = "jco",         # Palette de couleurs, voir ?ggpubr::ggpar
+             ggtheme = theme_minimal(),
+             main = "Factor map"
+             )
+```
+
+```{r}
+# Principal components + tree
+plot(res.hcpc, choice = "3D.map")
+```
+
+### Individus avec classement dans un cluster
+```{r}
+head(res.hcpc$data.clust, 10)
+```
+### Variables quantitatives décrivant le plus chaque cluster
+```{r}
+res.hcpc$desc.var$quanti
+```
+
+## Interprétation
+
+
+### Axes principaux associés aux clusters
+```{r}
+res.hcpc$desc.axes$quanti
+```
+### Individus représentatif de chaque groupe
+```{r}
+res.hcpc$desc.ind$para
+```
+### Cas de variables catégorielles
+```{r}
+# Dendrogramme
+fviz_dend(res.hcpc, show_labels = FALSE)
+# Individus
+fviz_cluster(res.hcpc, geom = "point", main = "Factor map")
+```
+
+```{r}
+# Description par les variables
+res.hcpc$desc.var$test.chi2
+```
+
+```{r}
+# Description par les catégories
+res.hcpc$desc.var$category
+```
+
+```{r}
+res.hcpc$desc.axes
+```
+
 
