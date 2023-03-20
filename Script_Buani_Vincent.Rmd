@@ -64,7 +64,11 @@ row.names(res_stat_uni) = c("Nobs",
 knitr::kable(round(t(res_stat_uni),3), format = "markdown", align = 'r')
 ```
 
+On observe que toutes les variables n'ont aucune valeurs manquantes. Pour les variables numériques toutes les impressions ont un minimum de 1 et un maximum de 5. Les moyennes sont comprises entre 3.046 et 4.469. De fait, les scores sont plutôt élevés en général. Concernant la note de satisfaction, la moyenne est de 8,2 ce qui montre que les clients sont globalement satisfait de leur scooter.
+
 ### Histogrames des variables
+On retrouve bien dans les histogrammes des valeurs élevées (3,4,5) qui ont une fréquence importante.
+
 ```{r}
 par(mfrow=c(2,3))
 for(i in 1:ncol(dnum))
@@ -78,7 +82,9 @@ for(i in 1:ncol(dnum))
 ```
 
 ## Statistiques bivariées 
-On calcul le rapport de corrélation entre la variable sexe et les variables quantitatives.
+On nous demande de différencier les hommes des femmes pour savoir quels types de scooter offrir à l'un et à l'autre. Pour tester si les variables quantitatives d'impression changent en fonction du sexe, on réalise des boxplots avec la variable sexe mais on calcule également le rapport de corrélation entre ceux-ci.
+
+
 ```{r}
 #install.packages('BioStatR')
 library('BioStatR')
@@ -107,7 +113,7 @@ colnames(res_cor) <- c("note_satisf",
                        "feux",
                        "fiabilite-moteur")
 row.names(res_cor)="sexe"
-knitr::kable(round(res_cor,3), format = "markdown", align = 'c')
+knitr::kable(round(res_cor,3), format = "markdown", padding = 7, align = 'c')
 ```
 
 ### Boites à  moustaches
