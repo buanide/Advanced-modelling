@@ -72,7 +72,7 @@ for(i in 1:ncol(dnum))
  hist(dnum[,names(dnum)[i]], 
       xlab = names(dnum)[i], 
       ylab = "fréquence", 
-      col = "blue", 
+      col = "#ffbe0b", 
       main = names(dnum)[i])  
  }
 ```
@@ -120,7 +120,7 @@ for(i in 1:ncol(dnum))
  boxplot(dnum[,names(dnum)[i]]~d[,names(d)[1]], 
          xlab = names(d)[1], 
          ylab = names(dnum)[i], 
-         col = "green")  
+         col = "#fcbf49")  
  }
 title("Boites à  moustaches", outer=TRUE, line=-1)
 ```
@@ -198,7 +198,7 @@ fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
               col.var = "black")
 
 fviz_famd_var(res.famd, "quanti.var", col.var = "contrib", 
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             gradient.cols = c("#4ea8de", "#5e60ce", "#7400b8"),
              repel = TRUE)
 ```
 
@@ -214,20 +214,20 @@ quali.var
 
 ```{r}
 fviz_famd_var(res.famd, "quali.var", col.var = "contrib", 
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07")
+             gradient.cols = c("#4ea8de", "#5e60ce", "#7400b8")
              )
 ```
 
 ```{r}
 fviz_famd_ind(res.famd, col.ind = "cos2", 
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             gradient.cols = c("#64dfdf", "#48bfe3", "#7400b8"),
              repel = TRUE)
 ```
 
 ```{r}
 fviz_mfa_ind(res.famd, 
              habillage = "sexe", # color by groups 
-             palette = c("#00AFBB", "#E7B800"),
+             palette = c("#9b2226", "#0a9396"),
              addEllipses = TRUE, ellipse.type = "confidence", 
              repel = TRUE # Avoid text overlapping
 )
@@ -237,7 +237,7 @@ fviz_mfa_ind(res.famd,
 ```{r}
 fviz_mfa_ind(res.famd, 
              habillage = "âge", # color by groups 
-             palette = c("#00AFBB", "#E7B800", "#FC4E07",  "#FF4EF7",  "#0F4007",  "#0C4E07", "#F03E07"),
+             palette = c("#9b2226", "#ae2012", "#bb3e03",  "#ca6702",  "#e9d8a6",  "#0a9396", "#005f73"),
              addEllipses = TRUE, ellipse.type = "confidence", 
              repel = TRUE # Avoid text overlapping
 )
@@ -247,7 +247,7 @@ fviz_mfa_ind(res.famd,
 ```{r}
 fviz_mfa_ind(res.famd, 
              habillage = "CSP", # color by groups 
-             palette = c("#00AFBB", "#E7B800", "#FC4E07", "#FF4EF7",  "#0F4007",  "#0C4E07"),
+             palette = c("#9b2226", "#ae2012", "#bb3e03",  "#ca6702",  "#e9d8a6",  "#0a9396"),
              addEllipses = TRUE, ellipse.type = "confidence", 
              repel = TRUE # Avoid text overlapping
              )
@@ -257,7 +257,7 @@ fviz_mfa_ind(res.famd,
 ```{r}
 fviz_mfa_ind(res.famd, 
              habillage = "type-cylindrée", # color by groups 
-             palette = c("#00AFBB", "#E7B800", "#FC4E07", "#FF4EF7"),
+             palette = c("#00AFBB", "#E7B800", "#FC4E07", "#4f772d"),
              addEllipses = TRUE, ellipse.type = "confidence", 
              repel = TRUE # Avoid text overlapping
              )
