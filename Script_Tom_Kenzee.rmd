@@ -1,0 +1,132 @@
+---
+title: "Projet_MA"
+author: "Tom ROQUAND"
+date: '2023-03-13'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RColorBrewer)
+library(funModeling)
+library(corrplot)
+library(Hmisc)
+library(glmnet)
+library(FactoMineR)
+library(factoextra)
+library(ggplot2)
+```
+
+## Lecture des données, chargement du fichier
+```{r}
+library(readxl)
+scooter <- read_excel("scooter.xls")
+scooter <- scooter[,-1]
+```
+
+## Etude préliminaire : structure globale et statistiques univariées
+```{r}
+str(scooter)
+```
+On remarque que les premières lignes sont des variables qualitatives, il faut utiliser la méthode as.factor() pour bien les étudier. 
+On remarque également que la variable note-satisfaction n'a pas été reconnue comme une valeur numérique, il faut donc utiliser la fonction as.numeric().
+
+```{r}
+scooter$'note-satisfaction' = as.numeric(scooter$'note-satisfaction')
+scooter$sexe = as.factor(scooter$sexe)
+scooter$âge = as.factor(scooter$âge)
+scooter$CSP = as.factor(scooter$CSP)
+scooter$'type-cylindrée' = as.factor(scooter$'type-cylindrée')
+scooter$'type-utilisation' = as.factor(scooter$'type-utilisation')
+scooter$'critère-esthétique' = as.factor(scooter$'critère-esthétique')
+```
+
+## Statistiques univariées 
+```{r}
+par(mfrow=c(2,3))
+barplot(table(scooter$sexe), col = brewer.pal(n = 3, name = "Blues"), main = "Sexe")
+barplot(table(scooter$âge), col = brewer.pal(n = 7, name = "Blues"), main = "Age")
+barplot(table(scooter$CSP), col = brewer.pal(n = 6, name = "Blues"), main = "CSP")
+barplot(table(scooter$'type-cylindrée'), col = brewer.pal(n = 4, name = "Blues"), main = "Cylindrée")
+barplot(table(scooter$'type-utilisation'), col = brewer.pal(n = 3, name = "Blues"), main = "Utilisation")
+barplot(table(scooter$'critère-esthétique'), col = brewer.pal(n = 7, name = "Blues"), main = "Critère Esthétique")
+```
+On remarque que seulement 71 femmes sont représentées dans cette table de données (pour 345 hommes). Une grande majorité des individus se situent entre 25 et 50 ans. Les classes les plus représentées sont la classe moyenne, les employés et les inactifs. Une majorité utilise son scooter de manière quotidienne pour se rendre au travail. 
+
+## Observation des données manquantes
+```{r}
+df_status(scooter, print_result = FALSE)$p_na
+df_status(scooter, print_result = FALSE)$q_na
+```
+On ne remarque aucune valeurs manquantes dans cette table de données, on n'aura donc pas besoin d'imputer de valeurs dans ce projet. 
+
+## Statistiques bivariées
+```{r}
+par(mfrow=c(2,2))
+boxplot(`note-satisfaction` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-magasin` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-marque` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-esthétique` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-prix` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-confort-pilote` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-confort-passager` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-dimensions` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-freinage` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-cylindrée` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-antivol` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-tableau-de-bord` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-accessoires` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-rangement` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-propulsion` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-refroidissement` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-tablier-avant` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-feux` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+boxplot(`imp-fiabilité-moteur` ~ sexe, data = scooter, col = brewer.pal(n = 3, name = "Blues"))
+```
+Globalement les femmes sont un peu plus satisfaites et attachent un peu plus d'importance au magasin ainsi qu'à un prix atttractif. Les hommes semblent s'orienter vers des véhicules avec plus de puissance, en accordant de l'importance à la propulsion et au refroidissement.
+
+```{r}
+mat <- cor(as.matrix(scooter[,7:25]))
+corrplot(mat,method="square", type="upper", order="hclust", tl.col="black")
+```
+On retrouve quelques corrélations logique : 
+  - propulsion ~ refroidissement (même dynamique que sur les boxplot)
+  - le confort du pilote et du passager
+  - les accessoires et le tablier avant (dédoublement d'informations ?)
+  - esthétique et tableau de bord 
+  - feux et fiabilité moteur
+
+On remarque que ces valeurs sont faiblement corrélées, il faut tout de même se méfier de la sur-information (par exemple le tablier avant qui est un accessoire). 
+
+
+## Tentative de clustering hiérarchique
+On va dans cette partie mettre toutes les données en factorielles pour réaliser une hcpc et tenter de trouver des clusters
+
+```{r}
+scooter_factor <- read_excel("scooter.xls")
+scooter_factor <- scooter_factor[, -1]
+scooter_factor <- as.data.frame(lapply(scooter_factor, as.factor))
+
+sf.mca = MCA(scooter_factor)
+sum(sf.mca$eig[,2]>(100/nrow(sf.mca$eig)), na.rm=TRUE)
+sum(sf.mca$eig[,1]>(sum(sf.mca$eig[,1])/nrow(sf.mca$eig)), na.rm=TRUE)
+
+barplot(sf.mca$eig[,3])
+lines(c(0,20),c(80,80))
+
+##  Coupure de l'arbre en 4 classes (typologie)
+hcpc=HCPC(sf.mca,nb.clust=2)
+```
+
+## Tentative AFM
+Les variables sont ici regroupées en plusieurs groupes : les caractéristiques des individus et les notes pour chaque préférence. On peut donc réaliser une AFM sur ces deux groupes de variables : 
+
+```{r}
+caracteristiques <- scooter[,1:6]
+notes <- scooter[,7:25]
+
+scooter.fma <- MFA(scooter, group = c(6, 19), type=c("n", "s"), graph = TRUE)
+```
+
+
+
