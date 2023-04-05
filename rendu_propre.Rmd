@@ -1,0 +1,101 @@
+---
+title: "Rendu_propre"
+author: "Tom ROQUAND"
+date: '2023-03-31'
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
+library(ggplot2)
+library(RColorBrewer)
+library(funModeling)
+library(corrplot)
+library(Hmisc)
+library(glmnet)
+library(FactoMineR)
+library(factoextra)
+#install.packages("prettydoc")
+library(prettydoc)
+library(cowplot)
+```
+
+
+# Introduction  
+## Présentation des données
+Dans le cadre de ce projet, les données sont fournies dans un fichier *scooter.xls*. Dans cette table de données sont représentés 416 individus autour de 25 variables. Ces variables concernent les individus, leur scooter et l'importance portée à certaines caractéristiques de celui-ci. Les 6 premières variables (qualitatives) portent sur les caractéristiques de l'individu et son scooter, les suivantes (quantitatives) sont des notes attribuées par l'individu à l'importance de certaines caractéristiques de leur véhicule. 
+
+## Présentation du sujet
+En partant de ce jeu de données, il faut retrouver les différents profils "type" d'utilisateurs qui peuvent se dégager. Il faudra ensuite relever les différences entre les hommes et les femmes. Enfin nous déduirons quel type de scooter conviendrait le mieux à un homme, à une femme.
+
+
+# Les données
+## Import 
+```{r}
+library(readxl)
+scooter <- read_excel("scooter.xls")
+scooter <- scooter[,-1]
+par(mfrow=c(3,3))
+summary(scooter)[,1:7]
+```
+
+## Refactorisation
+Comme expliqué en introduction, les 6 premières colonnes représentent des variables qualitatives. On remarque ici qu'elles sont lues comme des caractères, il faut donc utiliser la méthode **as.factor()** pour les étudier. La note de satisfaction qui est quantitative est également lue comme des caractères, on utilisera donc la méthode **as.numeric()**
+```{r}
+scooter$'note-satisfaction' = as.numeric(scooter$'note-satisfaction')
+scooter$sexe = as.factor(scooter$sexe)
+scooter$âge = as.factor(scooter$âge)
+scooter$CSP = as.factor(scooter$CSP)
+scooter$'type-cylindrée' = as.factor(scooter$'type-cylindrée')
+scooter$'type-utilisation' = as.factor(scooter$'type-utilisation')
+scooter$'critère-esthétique' = as.factor(scooter$'critère-esthétique')
+```
+
+
+## Observation des données manquantes
+```{r}
+df_status(scooter, print_result = FALSE)$p_na
+df_status(scooter, print_result = FALSE)$q_na
+```
+Cette table de donnée ne contient aucune donnée manquante. Il ne sera donc pas nécessaire d'imputer de valeurs dans notre dataframe. 
+
+
+## Analyse descriptive univariée
+```{r}
+par(mfrow=c(2,3))
+barplot(table(scooter$sexe), col = brewer.pal(n = 3, name = "Blues"), main = "Sexe")
+barplot(table(scooter$âge), col = brewer.pal(n = 7, name = "Blues"), main = "Age")
+barplot(table(scooter$CSP), col = brewer.pal(n = 6, name = "Blues"), main = "CSP")
+barplot(table(scooter$'type-cylindrée'), col = brewer.pal(n = 4, name = "Blues"), main = "Cylindrée")
+barplot(table(scooter$'type-utilisation'), col = brewer.pal(n = 3, name = "Blues"), main = "Utilisation")
+barplot(table(scooter$'critère-esthétique'), col = brewer.pal(n = 7, name = "Blues"), main = "Critère Esthétique")
+```
+On remarque que seulement 71 femmes sont représentées dans cette table de données (pour 345 hommes). Une grande majorité des individus se situent entre 25 et 50 ans. Les classes les plus représentées sont la classe moyenne, les employés et les inactifs. Une majorité utilise son scooter de manière quotidienne pour se rendre au travail. Aussi l'âge semble normalement distribué. 
+
+## Analyse descriptive bivariée
+```{r, fig.width=8, fig.height=12}
+gg1 <- ggplot(scooter, aes(x=`note-satisfaction`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg2 <- ggplot(scooter, aes(x=`imp-magasin`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg3 <- ggplot(scooter, aes(x=`imp-marque`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg4 <- ggplot(scooter, aes(x=`imp-esthétique`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg5 <- ggplot(scooter, aes(x=`imp-prix`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg6 <- ggplot(scooter, aes(x=`imp-confort-pilote`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg7 <- ggplot(scooter, aes(x=`imp-confort-passager`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg8 <- ggplot(scooter, aes(x=`imp-dimensions`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg9 <- ggplot(scooter, aes(x=`imp-freinage`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg10 <- ggplot(scooter, aes(x=`imp-cylindrée`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg11 <- ggplot(scooter, aes(x=`imp-antivol`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg12 <- ggplot(scooter, aes(x=`imp-tableau-de-bord`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg13 <- ggplot(scooter, aes(x=`imp-accessoires`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg14 <- ggplot(scooter, aes(x=`imp-rangement`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg15 <- ggplot(scooter, aes(x=`imp-propulsion`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg16 <- ggplot(scooter, aes(x=`imp-refroidissement`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg17 <- ggplot(scooter, aes(x=`imp-tablier-avant`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg18 <- ggplot(scooter, aes(x=`imp-feux`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+gg19 <- ggplot(scooter, aes(x=`imp-fiabilité-moteur`, y = sexe, fill = sexe)) + geom_boxplot() + theme_light() + scale_fill_brewer(palette = "Blues")
+plot_grid(gg1, gg2, gg3, gg4, gg5, gg6, gg7, gg8, gg9, gg10, gg11, gg12, gg13, gg14, gg15, gg16, gg17, gg18, gg19, ncol = 3)
+```
+On remarque avec seulement ces boîtes à moustache des différences de critères entre les hommes et les femmes. Effectivement la marque, le freinage, la propulsion, le refroidissement semblent plus importants pour les hommes, là où les femmes n'ont pas de critères qui ressortent. On peut relever dans ces statistiques le stéréotype des hommes qui accordent beaucoup d'importance aux caractéristiques techniques de leur véhicule et des femmes qui ne s'y intéressent pas.
+

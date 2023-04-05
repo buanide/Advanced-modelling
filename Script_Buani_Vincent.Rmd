@@ -19,6 +19,7 @@ rownames(d)<-d$ident
 d<-d[,-1]
 #head(d)
 ```
+
 ```{r}
 # Transformation des types des variables
 for (i in 1:6){
@@ -29,7 +30,8 @@ d$`note-satisfaction`= as.numeric(d$`note-satisfaction`)
 
 ```{r}
 # création d'un dataframe avec uniquement les variables quantitatives
-dnum = d[,7:25]
+d.active = d[,7:25]
+head(d.active,4)
 ```
 
 
@@ -89,29 +91,11 @@ On nous demande de différencier les hommes des femmes pour savoir quels types d
 #install.packages('BioStatR')
 library('BioStatR')
 res_cor = list()
-for (i in 1:ncol(dnum)) {
-  res_cor <- append(res_cor, eta2(dnum[,i], d$sexe), i-1) 
+for (i in 1:ncol(d)) {
+  res_cor <- append(res_cor, eta2(d[,i], d$sexe), i-1) 
 }
 res_cor <- as.data.frame(res_cor)
-colnames(res_cor) <- c("note_satisf",
-                       "magasin",
-                       "marque", 
-                       "esthetique", 
-                       "prix",
-                       "confort-pilote",
-                       "confort-passager",
-                       "dimensions",
-                       "freinage",
-                       "cylindree",
-                       "antivol",
-                       "tableau-de-bord",
-                       "accessoires",
-                       "rangement",
-                       "propulsion",
-                       "refroidissement",
-                       "tablier-avant",
-                       "feux",
-                       "fiabilite-moteur")
+colnames(res_cor) <- names(d)
 row.names(res_cor)="sexe"
 knitr::kable(round(res_cor,3), format = "markdown", padding = 7, align = 'c')
 ```
@@ -148,7 +132,113 @@ legend("left", paste("r = ", round(res_cor[i], 3)))
 # install.packages("Factoshiny")
 #library(Factoshiny)
 #Factoshiny(d)
+d.active <- d.active[,-1]
+str(d.active)
 ```
+
+## ACP
+```{r}
+library(ggplot2)
+library(factoextra)
+library(FactoMineR)
+acp.res = PCA(d, 
+              scale.unit=TRUE, 
+              ncp = 5,
+              quanti.sup = 7,
+              quali.sup = c(1:6),
+              graph=FALSE)
+```
+
+```{r}
+eig.val <- get_eigenvalue(acp.res)
+eig.val
+```
+
+```{r}
+fviz_eig(acp.res, addlabels = TRUE, ylim = c(0, 50))
+```
+
+```{r}
+# Color by cos2 values: quality on the factor map
+fviz_pca_var(acp.res, col.var = "contrib",
+             axes = c(1,2),
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE # Avoid text overlapping
+             )
+fviz_pca_ind(acp.res, col.var = "contrib",
+             axes = c(1,2),
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE # Avoid text overlapping
+             )
+```
+
+
+
+```{r}
+var <- get_pca_var(acp.res)
+var
+library("corrplot")
+corrplot(var$contrib, is.corr=FALSE)
+corrplot(var$cos2, is.corr=FALSE)
+
+ifelse(var$contrib>5, var$contrib, 0.0)
+ifelse(var$cos2>0.30, var$cos2, 0.0)
+ifelse(var$contrib>5, var$coord, 0.0)
+
+mcor <- ifelse(mcor>0.4, mcor, 0)
+```
+
+```{r}
+# Contributions of variables to PC1
+fviz_contrib(acp.res, choice = "var", axes = 1, top = 20)
+# Contributions of variables to PC2
+fviz_contrib(acp.res, choice = "var", axes = 2, top = 20)
+```
+
+
+```{r}
+set.seed(123)
+res.km <- kmeans(var$coord, centers = 3, nstart = 25)
+grp <- as.factor(res.km$cluster)
+
+fviz_pca_var(acp.res, col.var = grp, 
+             palette = c("#0073C2FF", "#EFC000FF", "#868686FF"),
+             legend.title = "Cluster")
+```
+
+```{r}
+fviz_pca_ind(acp.res,
+             geom.ind = "point", # show points only (nbut not "text")
+             col.ind = d$CSP, # color by groups
+             palette = c("#9b2226", "#ae2012", "#bb3e03",  "#ca6702",  "#e9d8a6",  "#0a9396"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+             )
+```
+
+
+```{r}
+library("Hmisc")
+rcorr(as.matrix(d.active))$P
+mcor <- rcorr(as.matrix(d.active))$r
+corrplot(mcor, 
+         type="upper", 
+         order="hclust", 
+         tl.col="black", 
+         #addCoef.col = T,
+         #addCoefasPercent = T,
+         tl.srt=55)
+```
+
+
+```{r}
+plot.PCA(acp.res, 
+         axes=c(1, 2), 
+         choix="ind", 
+         label="none",
+         habillage=17)
+```
+
 
 ## Analyse Factorielle des Données Mixtes (AFDM)
 

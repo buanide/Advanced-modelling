@@ -10,3 +10,11 @@ Plusieurs variables d'importance (score de 1 a 5) accordee par les utilisateurs 
 - Trouver des profils "type"  des utilisateurs des scooters. 
 - Quelle difference entre les hommes et les femmes ? 
 - Quel type de scooter proposeriez vous a un(e) homme/femme ?
+
+## Tom & Kenzee 
+ - Etude des statistiques univariées et bivariées en fonction de la variable sexe
+ - Etude de la matrice des corrélations 
+ - Clustering hiérarchique hcpc
+    Cet essai n'est pas très concluant, on ne parvient pas avec cette méthode à bien distinguer deux groupes
+ - Réalisation d'une AFM (analyse factorielle multiple)
+    Comme on a des données quantitatives et qualitatives, la méthode afm permet d'étudier toutes les données en simultané. Les résultats sont plus satisfaisants que ce que l'on a obtenu avant. 

@@ -1,0 +1,309 @@
+---
+title: "mod_av"
+author: "Buani_DOKI_ENGOUE"
+date: "2023-03-13"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+Vérifier les valeurs aberrantes : 
+
+examinez les distributions des variables pour identifier les valeurs aberrantes, 
+
+
+qui sont des valeurs extrêmes qui peuvent avoir un impact disproportionné sur vos résultats. 
+
+
+retirer ces valeurs aberrantes de l'analyse, soit les remplacer par des valeurs imputées si elles sont considérées comme des erreurs de mesure.
+
+Vérifier les distributions des variables : examinez les distributions des variables pour identifier les valeurs extrêmes, les asymétries, ou les distributions non normales. 
+
+Si nécessaire, vous pouvez appliquer des transformations pour rendre les distributions plus normales, telles que la transformation log ou la transformation Box-Cox.
+
+Vérifier la cohérence des données : 
+
+assurez-vous que les valeurs pour chaque variable sont cohérentes entre elles et avec les connaissances antérieures sur le sujet étudié. 
+
+
+que la vérification de la corrélation entre les variables, pour vous assurer que les relations entre les variables sont cohérentes avec les connaissances
+
+antérieures.
+
+Vérifier la qualité des données : assurez-vous que les données ont été collectées de manière fiable et valide. 
+
+
+Vous pouvez effectuer des tests de fiabilité et de validité pour évaluer la qualité des données.
+
+
+```{r}
+#install.packages("readxl")
+library(ggplot2)
+library(readxl)
+library(FactoMineR)
+library(dplyr)
+library(scales)
+library(stringr)
+d = read_excel("C:/Users/dokie/Documents/mod_av_projet_scooter/scooter.xls")
+d$ident=NULL
+d <- d %>% mutate_all(as.factor)
+head(d)
+summary(d)
+str(d)
+
+
+```
+
+
+
+```{r}
+
+vars <- names(d)
+tab_names <- paste0("tab_freq_", vars)
+
+# Création des tables de fréquences avec une boucle
+freq_list <- list()
+for (i in seq_along(vars)) {
+  tab <- d %>%
+    group_by(!!sym(vars[i])) %>%
+    summarise(n = n()) %>%
+    mutate(freq = round(n / sum(n) * 100, 1))
+  freq_list[[i]] <- tab
+  names(freq_list)[i] <- tab_names[i]
+}
+
+# Affichage des tables de fréquences
+
+
+
+
+
+
+```
+
+
+
+
+```{r}
+
+graph=list()
+for (i in seq_along(freq_list)) {
+  
+  plot_data <- freq_list[[i]]
+  plot_title <- paste("Distribution de", names(freq_list)[i])
+  
+  if (names(plot_data)[1] == "sexe"){
+  
+  graph[[i]]=ggplot(plot_data, aes(x = !!sym(names(plot_data)[1]), y = freq, fill = !!sym(names(plot_data)[1]))) +
+   geom_col() +
+    labs(title = plot_title, x = names(plot_data)[1], y = "Pourcentage de personnes") +
+    geom_text(aes(label = paste0(freq, "%")), position = position_stack(vjust = 0.5), color = "white")
+  
+  }
+  
+  else{
+   graph[[i]]= ggplot(plot_data, aes(x = !!sym(names(plot_data)[1]), y = freq)) +
+      geom_col(fill = "blue") +
+      labs(title = plot_title, x = names(plot_data)[1], y = "Pourcentage de personnes") +
+      geom_text(aes(label = paste0(freq, "%")), position = position_stack(vjust = 0.5), color = "white")
+  }
+  
+  
+}
+
+
+graph
+
+
+```
+
+
+On peut dire pour les ditributions suivante que :
+
+```{r}
+
+for (i in seq_along(freq_list)) {
+  freq_data <- freq_list[[i]]
+  var_name <- names(freq_data)[1]
+  
+  max_freq <- max(freq_data$freq)
+  max_val <- freq_data[freq_data$freq == max_freq, var_name]
+  max_phrase <- paste0("La fréquence maximale pour la variable '", var_name, "' est de ", max_freq, "% pour la catégorie '", freq_data[which.max(freq_data$freq),] %>% pull(var_name) %>% first(), "'.")
+  
+  min_freq <- min(freq_data$freq)
+  min_val <- freq_data[freq_data$freq == min_freq, var_name]
+  min_phrase <- paste0("La fréquence minimale pour la variable '", var_name, "' est de ", min_freq, "% pour la catégorie '",freq_data[which.min(freq_data$freq),] %>% pull(var_name) %>% first(), "'.")
+  
+  print(max_phrase)
+  print(min_phrase)
+}
+
+
+
+
+
+
+
+```
+
+
+
+on pourrait faire des tests d'hypothèses entre la variable sexe et les autres variables 
+
+On essaiera de mettre le test Khi deux
+H0:Les deux variables sont indépendantes
+H1: Les deux variables ne sont pas indépendantes
+
+Les probabilités ne sont pas exactes
+
+```{r}
+vars <- names(d)
+
+# Création des tables de fréquences avec une boucle
+tab_cont <- list()
+
+# Créer un tableau de contingence pour chaque variable
+
+for (i in 1:ncol(d)) {
+  tab_cont[[i]]=table(d$y_satisfaction, d[, i])
+}
+
+
+
+chisq.test(table(d$y_satisfaction, d$CSP))
+chisq.test(table(d$y_satisfaction, d$`type-cylindrée`))
+chisq.test(table(d$y_satisfaction, d$`type-utilisation`))
+chisq.test(table(d$y_satisfaction, d$`type-utilisation`))
+
+
+
+```
+
+
+On fera alors le test de fisher 
+```{r}
+
+  fisher.test(d$y_satisfaction,d$CSP,simulate.p.value=TRUE)
+
+
+```
+```{r}
+fisher.test(d$y_satisfaction,d$sexe,simulate.p.value=TRUE)
+
+for(i in vars){
+fisher.test(table(d$y_satisfaction,d$i),simulate.p.value=TRUE)
+  
+}
+
+
+for (i in vars){
+is.na(d[,i])
+}
+
+
+```
+
+
+
+
+
+```{r}
+fisher.test(d$y_satisfaction,d$`type-cylindrée`,simulate.p.value=TRUE)
+
+
+
+
+
+
+
+
+
+```
+
+
+
+```{r}
+library(car)
+colnames(d)[7] <- "y_satisfaction"
+reg=glm(d$y_satisfaction ~ ., data=d ,family = binomial(link = "logit")) 
+
+vif=vif(reg)
+
+
+paste("Les variables qui ont un vif supérieure à 10 sont",names(which(vif[,1] >5)))
+
+# hypothèse d'un problèmes de multicolinéarités 
+
+#summary(reg)
+#summary(y)
+
+
+```
+
+
+
+Quelle difference entre les hommes et les femmes ? 
+
+```{r}
+  #library(Factoshiny)
+  #res.MCA= MCA(d)
+  #Factoshiny(res.MCA)
+  
+   
+  
+  #filter(res.MCA$ind$contrib>0.78125)
+  
+  
+  #Factoshiny(d)
+  #res.MCA<-MCA(d,ncp=Inf ,graph=FALSE)
+#res.HCPC<-HCPC(res.MCA,nb.clust=3,kk=100,consol=FALSE,graph=FALSE)
+#plot.HCPC(res.HCPC,choice='tree',title='Arbre hiérarchique')
+#plot.HCPC(res.HCPC,choice='map',draw.tree=FALSE,title='Plan factoriel')
+#plot.HCPC(res.HCPC,choice='3D.map',ind.names=FALSE,centers.plot=FALSE,angle=60,title='Arbre hiérarchique sur le plan factoriel')
+```
+
+
+
+Quel type de scooter proposeriez vous a un(e) homme/femme ? 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Vérifiez les données pour détecter des valeurs aberrantes ou des erreurs de saisie.
+Essayez de spécifier une autre fonction de lien ou une autre famille de distribution dans le modèle de régression logistique, en fonction de la nature des données.
+Utilisez des techniques de régularisation, telles que la pénalisation de Ridge ou Lasso, pour réduire l'influence des prédicteurs qui sont fortement corrélés avec la variable de réponse.
+Si le problème est dû à une séparation des données, vous pouvez utiliser des techniques telles que la régression logistique exacte, la régression logistique bayésienne, ou utiliser une méthode de rééchantillonnage, telle que l'é
+```{r}
+#head(d)
+
+
+
+
+
+```
+#sélection de variables
+```{r}
+#library(MASS)
+#reg_aic=stepAIC(reg, trace=0)
+
+
+
+#Factoshiny(d)
+```
+
+
+
+
