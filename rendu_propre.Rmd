@@ -99,3 +99,291 @@ plot_grid(gg1, gg2, gg3, gg4, gg5, gg6, gg7, gg8, gg9, gg10, gg11, gg12, gg13, g
 ```
 On remarque avec seulement ces boîtes à moustache des différences de critères entre les hommes et les femmes. Effectivement la marque, le freinage, la propulsion, le refroidissement semblent plus importants pour les hommes, là où les femmes n'ont pas de critères qui ressortent. On peut relever dans ces statistiques le stéréotype des hommes qui accordent beaucoup d'importance aux caractéristiques techniques de leur véhicule et des femmes qui ne s'y intéressent pas.
 
+
+
+## Profils type
+
+### L'ACP des 416 évalutations de scooter
+
+```{r echo=FALSE}
+
+d_sans_note_sati=scooter[,-c(7)]
+#selection des variables à interpréter sur l'axe 1 
+res.PCA<-PCA(scooter,scale.unit=TRUE,quali.sup=c(1,2,3,4,5,6,7,8),graph=FALSE,ncp=10)
+# varibles corrélées négativement avec l'axe 2
+var_cor_neg_dim_2=which(res.PCA$var$coord[,2]<0 )
+var_cor_pos_dim_2=which(res.PCA$var$coord[,2]>0 & res.PCA$var$cos2[,2]>0.1)
+vars_noms_axes_1_2=which(res.PCA$var$cos2[,1]>0.2 & res.PCA$var$contrib[,1]>5 | res.PCA$var$cos2[,2]>0.2 & res.PCA$var$contrib[,2] > 5)
+vars_noms_axes_2_3=which(res.PCA$var$cos2[,2]>0.2 & res.PCA$var$contrib[,2] > 5.263158 | res.PCA$var$cos2[,3]>0.2 & res.PCA$var$contrib[,3] > 5.263158)
+
+indiv_plan_1=which(res.PCA$ind$cos2[,1]>0.3)
+indiv_plan_2=which(res.PCA$ind$cos2[,2]>0.3)
+var_cor_pos_dim_2
+```
+
+### selection du nombre d'axes 
+
+
+Nous avons décidé de garder 10 axes pour obtenir plus de 80% de l'information délivré par nos données. Nous n'interpréterons que les deux premiers axes car les autres ne révèlent pas des structures très pertinentes dans nos données.
+```{r}
+fviz_eig(res.PCA, addlabels = TRUE, ylim = c(0, 50))
+```
+### Le cercle de corrélation des variables quantitatives
+
+On remarque toutes les variables sont positivement corrélés sur la première dimension 1.
+
+Ce qui n'est pas le cas sur la deuxième. Les variables imp-freinage imp-cylindrée ,   et imp-propulsion  sont respectivement opposée aux variables imp-magasin, imp-marque et imp-esthétique .
+
+```{r}
+# création d'un dataframe avec uniquement les variables quantitatives
+fviz_famd_var (res.PCA, repel = TRUE)
+```
+
+
+### Les variables les plus contributives
+
+Les variables qui contribuent le plus à la formation de l'axe 1 sont les notes sur le refroidisesement,le confort du pilote, le rangement , les accessoires et le confort passager.
+```{r}
+fviz_contrib(res.PCA, choice = "var", axes = 1, top = 5)
+# Contributions des variables à PC2
+```
+Les variables qui contribuent le plus à la formation de la deuxième dimension sont les notes sur la propulsion, le prix, le refroidissement, le cylindrée et l'antivol.
+
+```{r}
+fviz_contrib(res.PCA, choice = "var", axes = 2, top = 5)
+```
+
+### Les individus 
+
+Le but est de trouver des profils types des clients . Nous essayerons d'illustrer les choix des utilisateurs selon plusieurs caractéristiques . Comme l'âge , la CSP et le sexe.
+
+
+## Le premier plan factoriel 
+
+
+### Critère du sexe
+
+Ce graphique du premier plan factoriel présente les individus qui ont un cosinus carré supérieur à 0.3.
+Les individus qui ont de fortes valeurs positives sur la première dimension sont des hommes à l'opposé de la deuxième ou ceux qui ont une forte valeur positive sont des femmes. Ce sont hypothétiquement des hommes qui ont donné des notes élevées en termes de imp-marque, mp-esthétique,imp-confort-pilote .
+
+```{r echo=FALSE}
+
+fviz_pca_ind(res.PCA,
+             geom.ind = "point", # Montre les points seulement (mais pas le "text")
+             col.ind = d_sans_note_sati$sexe, # colorer by groups
+             palette = "jco",
+             addEllipses = FALSE, # Ellipses de concentration
+             legend.title = "Groups",axes = c(1, 2),
+             select.ind = list(name = c(unique(indiv_plan_1),unique(indiv_plan_2)), cos2 = NULL, contrib = NULL)
+             )
+```
+
+Notre hypothèse est confirmée car lorsque l'on regarde de plus dans les données ces individus en moyenne donnent des notes supérieures à 4 sur 6 pour la marque, l'esthétique et le confort du pilote.
+
+
+*Tableau des moyennes des notes pour la marque , l'esthétique et le confort du pilote*
+
+```{r echo=FALSE}
+var_pos_axe_1=which(res.PCA$var$cos2[,1]>0.2 & res.PCA$var$coord[,1]>0)
+liste_var_pos_axe_1=names(var_pos_axe_1)
+colMeans(scooter[ ,liste_var_pos_axe_1[1:3]])
+```
+
+*Tableau des moyennes des notes pour la marques , l'esthétique , le confort pour les idnividus ayant des coordonnées positives sur la dimension 1*
+
+```{r echo=FALSE}
+indiv_plan_1_pos=which(res.PCA$ind$cos2[,1]>0.3 & res.PCA$ind$coord[,1]>0)
+var_pos_axe_1=which(res.PCA$var$cos2[,1]>0.2 & res.PCA$var$coord[,1]>0)
+liste_var_pos_axe_1=names(var_pos_axe_1)
+colMeans(scooter[indiv_plan_1_pos ,liste_var_pos_axe_1[1:3]])
+```
+
+
+Inversement ceux possédant une forte valeurs positives donnent des notes inférieures à la moyennes générale pour ces mêmes critères.
+
+*Tableau des moyennes des notes pour la marques , l'esthétique , le confort pour les idnividus ayant des coordonnées négatives sur la dimension 2 *
+
+```{r echo=FALSE}
+indiv_plan_1_neg=which(res.PCA$ind$cos2[,1]>0.3 & res.PCA$ind$coord[,1]<0)
+colMeans(scooter[indiv_plan_1_neg ,liste_var_pos_axe_1[1:3]])
+```
+
+
+### Critère de l'âge
+
+
+```{r echo=FALSE}
+library(Factoshiny)
+#Factoshiny(res.PCA)
+fviz_pca_ind(res.PCA,
+             geom.ind = "point", # Montre les points seulement (mais pas le "text")
+             col.ind = d_sans_note_sati$âge, # colorer by groups
+             palette = "jco",
+             addEllipses = FALSE, # Ellipses de concentration
+             legend.title = "Groups",axes = c(1, 2),
+             select.ind = list(name = c(unique(indiv_plan_1),unique(indiv_plan_2)), cos2 = NULL, contrib = NULL)
+             )
+```
+
+
+## CSP
+
+```{r}
+fviz_pca_ind(res.PCA,
+             geom.ind = "point", # Montre les points seulement (mais pas le "text")
+             col.ind = d_sans_note_sati$CSP, # colorer by groups
+             palette = "jco",
+             addEllipses = FALSE, # Ellipses de concentration
+             legend.title = "Groups",axes = c(1, 2),
+             select.ind = list(name = c(unique(indiv_plan_1),unique(indiv_plan_2)), cos2 = NULL, contrib = NULL)
+             )
+```
+
+
+
+## Description des dimensions
+
+
+**Le plan du cylindréé**
+
+Le cylindrée est la variable qui permet le mieu de distinguer les individus sur le plan composé de la dimension 1 et 2.
+**La dimension 1 **
+
+
+La dimension 1 oppose des individus caractérisés par une coordonnée fortement positive sur l’axe (à droite du graphe) à des individus caractérisés par une coordonnée fortement négative sur l’axe (à gauche du graphe).
+
+	Le groupe 1 (caractérisés par une coordonnée positive sur l’axe)  est caractérisé par des individus satisfaits par les qualités de refroidissement , de freinage, de propulsion , de cylindrée , de fiabilité du moteur, du confort pour le passager , la qualité des accessoires, du rangement , du tableau de bord et du confort du pilote pour le scooter. **Ce sont majoritairement des hommes ont entre 18-19 ans 20-25 ans, ils aiment les cylindrées de 250-400 et ils appartiennent à la classe moyenne. Ils n'aiment pas les scooters sobre.**
+	
+	
+Le groupe 2 (caractérisés par une coordonnées négative sur l’axe) est caractérisé par des individus qui ne sont pas satisfaits par du confort des passagers, du rangement,  du confort du pilote,  du refroidissement, des feux, du freinage, de la fiabilité du moteur et des dimensions du scooter (de la plus extrême à la moins extrême). **Ce sont majoritairement des femmes qui ont entre 16 et 17 ans et 20 et 24 ans qui aiment les scooters sobres et rétro.**
+
+
+Le groupe 3 (caractérisés par certain positives sur l'axe ) est caractérisé par des individus satisfaits par les qualités de tableau de bord et du confort du pilote pour le scooter. Ce sont majoritairement des hommes ont entre 20-24ans, 25-29ans, 30-39 ans   et qui sont inactifs. **Ce sont majoritairement des femmes qui ont entre 16 et 17 ans et 20 et 24 ans qui aiment les scooters sobres et rétro.**
+
+
+
+**La dimension 2 **
+
+La dimension 2 oppose des individus caractérisés par une coordonnée fortement positive sur l’axe (à droite du graphe) à des individus caractérisés par une coordonnée fortement négative sur l’axe (à gauche du graphe).
+	
+
+Le groupe 1 (caractérisés par une coordonnée positive sur l’axe) partage partage:
+
+de faibles valeurs pour des variables telles que imp-refroidissement, imp-accessoires, imp-confort-pilote, imp-freinage, imp-rangement, imp-confort-passager, imp-fiabilité-moteur, imp-tableau-de-bord, imp-cylindrée et imp-propulsion (de la plus extrême à la moins extrême).
+
+
+Le groupe 2 (caractérisés par une coordonnée positive sur l’axe) partage :
+
+de fortes valeurs pour les variables imp-magasin, imp-esthétique, imp-accessoires et imp-tableau-de-bord (de la plus extrême à la moins extrême) 
+
+de faibles valeurs pour les variables imp-propulsion, imp-refroidissement, imp-freinage et imp-cylindrée (de la plus extrême à la moins extrême).
+
+**Les individus de ces 2 groupes sont des femmes qui préfèrent les scooter à la mode avec des cylindrée de type 100 et qui ont entre 18 et 19 ans ou entre 25 et 29 ans.**
+
+
+Le groupe 3 (caractérisés par une coordonnées négative sur l’axe) partage :
+
+de faibles valeurs pour des variables telles que imp-prix, imp-antivol, imp-magasin, imp-tableau-de-bord, imp-confort-passager, imp-accessoires, imp-tablier-avant, imp-rangement, imp-feux et imp-esthétique (de la plus extrême à la moins extrême).
+
+
+
+Le groupe 4 (caractérisés par une coordonnées négative sur l’axe) partage :
+
+de fortes valeurs pour des variables telles que imp-refroidissement, imp-freinage, imp-confort-passager, imp-accessoires, imp-propulsion, imp-rangement, imp-tableau-de-bord, imp-fiabilité-moteur, imp-cylindrée et imp-confort-pilote (de la plus extrême à la moins extrême).
+
+
+**Les individus de ces 2 groupes sont des hommes qui préfèrent les scooter innovants, qui ressemblent à des motos et qui ont un gros cylindré mais qui sont sobre et discret . Ce sont des hommes qui sont de classe supérieur ou moyenne .**
+
+
+
+
+
+
+**La dimension 3**
+
+C'est l'esthétisme qui permet de mieux séparer nos variables sur cet axes.
+
+La dimension 3 oppose des individus caractérisés par une coordonnée fortement positive sur l’axe (à droite du graphe) à des individus caractérisés par une coordonnée fortement négative sur l’axe (à gauche du graphe).
+
+Le groupe 1 (caractérisés par une coordonnée positive sur l’axe) partage :
+
+de fortes valeurs pour les variables imp-tablier-avant, imp-accessoires, imp-antivol, imp-feux, imp-rangement et imp-refroidissement (de la plus extrême à la moins extrême).
+de faibles valeurs pour les variables imp-esthétique, imp-marque, imp-cylindrée et imp-magasin (de la plus extrême à la moins extrême).
+
+**Ce sont des individus qui préfèrent les scooter sobre, classique et qui ont entre 49 et 50 ans.**
+
+Le groupe 2 (caractérisés par une coordonnées négative sur l’axe) partage :
+
+de fortes valeurs pour la variable imp-tableau-de-bord.
+de faibles valeurs pour les variables imp-prix, imp-feux, imp-magasin, imp-fiabilité-moteur, imp-dimensions et imp-tablier-avant (de la plus extrême à la moins extrême).
+Le groupe 3 (caractérisés par une coordonnées négative sur l’axe) partage :
+
+de fortes valeurs pour les variables imp-magasin, imp-prix, imp-dimensions, imp-esthétique, imp-marque, imp-fiabilité-moteur, imp-cylindrée et imp-feux (de la plus extrême à la moins extrême).
+de faibles valeurs pour les variables imp-accessoires, imp-tablier-avant, imp-antivol et imp-tableau-de-bord (de la plus extrême à la moins extrême).
+
+**Ce sont des individus qui préfèrent les scooter rétro , qui ressemblent à des moto, ils ont entre 20 et 24 ans.**
+
+
+
+**Synthèses et établissement de profils clients**
+
+Ainsi l'acp nous a permis d'identifier plusieurs profils clients:
+
+
+- Des hommes qui ont entre 18-19 ans 20-25 ans, qui aiment les cylindrées de type 250-400 , qui appartiennent à la classe moyenne. 
+- Des femmes qui ont entre 16-17 ans ou 20-24 ans qui aiment les scooters sobres et rétro.
+- Des femmes qui préfèrent les scooter à la mode avec des cylindrée de type 100 et qui ont entre 18 et 19 ans ou entre 25 et 29 ans.
+- Des hommes qui préfèrent les scooter innovants, qui ressemblent à des motos , qui ont un gros cylindré mais qui sont sobre et discret . Ce sont des hommes qui sont de classe supérieur ou moyenne .
+- Des personnes qui aiment les scooter sobres, classiques et qui ont entre 49 et 50 ans.
+- Des individus qui préfèrent les scooter rétro , qui ressemblent à des moto, qui ont entre 20 et 24 ans.**
+
+
+
+
+
+
+# Classification hiérarchique ascendante (CAH) avec l'acp 
+
+```{r echo=FALSE}
+hcpc=HCPC(res.PCA,nb.clust=3,consol=FALSE)
+hcpc$desc.var
+```
+
+```{r echo=FALSE}
+plot(hcpc,choice="bar") 
+```
+
+
+On cherche à minimiser l’inertie inter-classe. Sur cet histogramme, on observe 1 coude significatif entre 1 et 2. Le choix le plus judicieux est donc de faire répartir nos données en 2 classes.
+
+
+## Description des clusters selon les variables 
+
+*Description du cluster 1* 
+
+D’après ces résultats, la classe n°1 est plutôt caractérisée par une population de femmes, jeunes et des scooters à type de cylindré petit. On pourrait aussi ajouter une tendance au niveau du critère esthétique qui serait plutôt classique et à la mode. De plus, dans cette classe, il y a très peu d’hommes, de scooters à type de cylindré gros, et dont le critère esthétique est innovant. 
+
+Expliquons plus en détail ces résultats :
+
+Dans la classe n°1, il y a une surreprésentation des individus dont le type de cylindré choisi est 100, puisque Mod/Cla (34.46%) > Global (27.64%) 
+De la même façon, il y a une surreprésentation des individus de sexe féminin, puisque Mod/Cla (22.59%) > Global (17.06). Pour la modalité age = 20-24 ans, cela est aussi le cas puisque Mod/Cla (16.94%) > Global (12.74%)
+A l’inverse, il y a une sous représentation des individus dont le type de cylindré choisi est 250-400, puisque Mod/Cla (18.64%) < Global(23.55%). Idem pour les modalités sexe masculine et crititère esthétique est innovant avec respectivement Mod/Cla (77.40%) < Global(82.93) et Mod/Cla (22.03%) < Global(27.40%)
+
+Logiquement, la classe 2 serait caractérisée par les variables qui sont très faiblement représentées dans la classe n°1 soit la population d’hommes, de scooters à type de cylindré gros, et de le critère esthétique est innovant. 
+
+
+
+*Description du cluster 2* 
+
+
+  Il y a une surreprésentation des hommes dans le cluster 2 , il sont de 82,93% dans la population et contre 87.03% dans le cluster. Il y a une surreprésentation de la modalité “innovant nouveau” 27.40% contre 31,38% dans notre cluster . Ensuite on remarque une surreprésentation des cylindrés entre 250 et 400 (23,56 % dans la population globale contre 27,19% dans notre cluster). Toutefois, on constate une sous représentation des individus qui ont entre 20 et 24 ans, des femmes et des cylindrée 100 respectivement  (12,74% dans la population globale contre 9,62% dans notre cluster).17,06% dans la population globale contre 12,97% dans notre cluster ,27,64% dans la population globale contre 22,59% dans notre cluster . Ainsi les individus du cluster 2 sont majoritairement des hommes qui préfèrent les scooters modernes et des cylindres assez puissants entre 250 et 400.
+
+
+Les 2 profils types qui ressortent donc ici sont les suivants : 
+population de femmes, jeune et des scooters à type de cylindré petit
+population d’hommes, à type de cylindré gros et au critère esthétique nouveau.
+
+Il serait alors intéressants de proposer des cooters avec de petits cylindrés à des femmes plutôy jeunes et de puissants scooter dernier cris aux hommes .
+
+
+
