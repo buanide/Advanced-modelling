@@ -346,7 +346,7 @@ Ainsi l'acp nous a permis d'identifier plusieurs profils clients:
 
 ```{r echo=FALSE}
 hcpc=HCPC(res.PCA,nb.clust=3,consol=FALSE)
-hcpc$desc.var
+hcpc$desc.var$category
 ```
 
 ```{r echo=FALSE}
@@ -383,7 +383,34 @@ Les 2 profils types qui ressortent donc ici sont les suivants :
 population de femmes, jeune et des scooters à type de cylindré petit
 population d’hommes, à type de cylindré gros et au critère esthétique nouveau.
 
-Il serait alors intéressants de proposer des cooters avec de petits cylindrés à des femmes plutôy jeunes et de puissants scooter dernier cris aux hommes .
+Il serait alors intéressants de proposer des scooters avec de petits cylindrés à des femmes plutôt jeunes et de puissants scooter dernier cris aux hommes .
 
+
+
+## Explication des variables selon les clusters
+
+Nous avons réalisé une CAH avec seulement deux clusters et nous nous sommes aperçu que toutes les variables quantitatives sont significatives mais également que celles ayant un fort impact positif dans l'un des deux clusters ont un fort impact négatif dans l'autre cluster. 
+Le v-test était inversement proportionnel entre les deux clusters. Nous avons alors décidé d'étudier le cas des 3 clusters pour avoir des cas plus interessants.  
+
+```{r echo=FALSE}
+hcpc$desc.var$quanti$`1`
+```
+
+Dans le cluster 1, nous avons toutes les variables qui sont significatives. Les plus représentatives sont les 5 suivantes : imp-freinage, imp-tableau-de-bord, imp-rangement, imp-confort-pilote et imp-refroidissement. Ce cluster est représenté par des notes faibles dans ces variables.
+
+```{r echo=FALSE}
+hcpc$desc.var$quanti$`2`
+```
+
+Dans le cluster 2, nous avons également toutes les variables qui sont significatives. Les 3 plus représentatives sont les suivantes : imp-propulsion, imp-tablier-avant et imp-refroidissement. Toutes les autres ont une p-value bien plus élévée mais inférieur à 5%. Ce cluster est représenté par des notes faibles dans ces 3 variables.
+
+```{r echo=FALSE}
+hcpc$desc.var$quanti$`3`
+```
+
+Dans le cluster 3, nous avons également toutes les variables qui sont significatives. Les 5 plus représentatives sont les suivantes : imp-refroidissement, imp-freinage, imp-propulsion, imp-rangement et imp-confort-pilote. Ce cluster est représenté par des notes élevées dans toutes ces variables mais surtout dans les 5 citées précédemment.
+
+
+On retient que les individus du groupe 1 et 2 vont mettre des notes faibles pour les variables significatives citées plus haut telles que imp-freinage ou encore imp-propulsion et que les individus du groupe 3 mettront eux des notes élevées pour ces mêmes variables.
 
 
