@@ -1,6 +1,6 @@
 ---
-title: "Rendu_propre"
-author: "Tom ROQUAND"
+title: "Rapport final - Sujet 8"
+author: "Kenzée Aboustait, Buani Doki Engoué, Emma Le Franc, Vincent Reau, Tom Roquand, Maëlys Tieha"
 date: '2023-03-31'
 output: 
   pdf_document:
@@ -463,4 +463,9 @@ Dans le cluster 3, nous avons également toutes les variables qui sont significa
 
 On retient que les individus du groupe 1 et 2 vont mettre des notes faibles pour les variables significatives citées plus haut telles que imp-freinage ou encore imp-propulsion et que les individus du groupe 3 mettront eux des notes élevées pour ces mêmes variables.
 
+# Conclusion
 
+Pour résumer, suite à nos analyses, nous avons identifié 4 groupes associés aux clients de la base. 
+Nous avons trouvé des simularités entre les 2 premiers groupes à savoir les individus de ces 2 groupes sont des hommes qui préfèrent les scooter innovants, qui ressemblent à des motos et qui ont un gros cylindré mais qui sont sobre et discret . Ce sont généralement des hommes qui sont de classe supérieur ou moyenne. 
+Concernant les deux derniers groupes, ils sont caractérisés par des hommes qui préfèrent les scooters innovants, qui ressemblent à des motos et qui ont un gros cylindré mais qui sont sobre et discret . Ce sont des hommes qui sont de classe supérieur ou moyenne.
+    Concernant les analyses en fonction du sexe, nous avons identifié les scooters à proposer en fonction de ceux-ci. A une population de femmes, nous pouvons proposer des scooters à type de cylindré petit et au critère esthétique classique et à la mode. Cependant, pour les hommes, le type de scooter à proposer serait plutôt du style gros cylindré et au critère esthétique nouveau. La principale différence se trouve au niveau de type de cylindré mais aussi au niveau du critère esthétique.
