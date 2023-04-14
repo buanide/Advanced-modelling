@@ -103,6 +103,56 @@ On remarque avec seulement ces boîtes à moustache des différences de critère
 
 ## Profils type
 
+### ANOVA sur les données qualitatives 
+Nous décidons de séparer les données qualitatives des données quantitatives afin de les étudier plus précisément. On regroupera ensuite les résultats obtenus entre l'ACP réalisée par les autres membres et l'ANOVA.
+
+#### Récupérations des données qualitatives
+```{r}
+scooter_quali <- read_excel("scooter2.xlsx")
+scooter_quali <- scooter_quali[,2:8]
+scooter_quali$sexe = as.factor(scooter_quali$sexe)
+scooter_quali$CSP = as.factor(scooter_quali$CSP)
+scooter_quali$'type-cylindrée' = as.factor(scooter_quali$'type-cylindrée')
+scooter_quali$'type-utilisation' = as.factor(scooter_quali$'type-utilisation')
+scooter_quali$'critère-esthétique' = as.factor(scooter_quali$'critère-esthétique')
+scooter_quali$'note-satisfaction' = as.numeric(scooter$'note-satisfaction')
+
+```
+
+Pour réaliser une ANOVA, les données doivent respecter certains critères, tout d'abord la normalité des résidus (Shapiro test), ensuite l'homosédasticité (bartlett test), et l'indépendance qui est déjà vérifiée sur la matrice de corrélation. 
+
+#### Création du modèle
+```{r}
+modele_quali = lm(age ~ ., data=scooter_quali)
+modele_note = lm(`note-satisfaction` ~ ., data = scooter_quali)
+#summary(modele_quali)
+```
+
+#### Réalisation des tests préliminaires à l'ANOVA
+```{r}
+shapiro.test(scooter_quali$`note-satisfaction`)
+shapiro.test(residuals(modele_note))
+```
+On obtient ici une p-value largement inferieure a 0.05. La distribution n'est donc pas normale. L'hypothèse de la normalité de la distribution et des résidus est rejetée, on devra donc réaliser un test de Kruskal-Wallis non-paramétrique. Nous n'avons donc plus besoin de vérifier l'homogénéité des variances.
+
+
+```{r}
+kruskal.test(`note-satisfaction` ~ sexe, data=scooter_quali)$p.value
+kruskal.test(`note-satisfaction` ~ CSP, data=scooter_quali)$p.value
+kruskal.test(`note-satisfaction` ~ `type-cylindrée`, data=scooter_quali)$p.value
+kruskal.test(`note-satisfaction` ~ `type-utilisation`, data=scooter_quali)$p.value
+kruskal.test(`note-satisfaction` ~ `critère-esthétique`, data=scooter_quali)$p.value
+kruskal.test(`note-satisfaction` ~ age, data=scooter_quali)$p.value
+```
+On remarque ici que les variables sont toutes représentatives sauf la CSP qui ne semble pas jouer tant que ça sur la note de satisfaction. Concernant les autres variables cela semble en effet logique.
+
+On peut étudier de plus près la variable des catégories socio-professionnelles : 
+```{r}
+barplot(table(scooter_quali$CSP), col = brewer.pal(n = 6, name = "Blues"))
+```
+Il existe des différences de représentation en termes de quantités mais elles ne suffisent pas à expliquer les résultats obtenus. On pourrait vérifer les liens entre ces catégories par des tests d'égalité des moyennes comme t.test ou Wilkox test. 
+
+
 ### L'ACP des 416 évalutations de scooter
 
 ```{r echo=FALSE}
