@@ -1,4 +1,6 @@
-# Mod_Av_Projet_Scooter
+# Modélisation avancé
+
+Dans le cadre du cours de modélisation avancée nous avons réalisé un projet qui permet d'étudier la satisfaction client d'utilisateurs de scooters.
 
 ## Projet : Satisfaction utilisateurs scooter.
 
@@ -11,9 +13,12 @@ Plusieurs variables d'importance (score de 1 a 5) accordee par les utilisateurs 
 - Quelle difference entre les hommes et les femmes ? 
 - Quel type de scooter proposeriez vous a un(e) homme/femme ?
 
-## Tom & Kenzee 
+## Les techniques employées
  - Etude des statistiques univariées et bivariées en fonction de la variable sexe
- - Etude de la matrice des corrélations 
+ - Etude de la matrice des corrélations
+ - Réalisation d'une acp 
+
+## Faits marquants 
  - Clustering hiérarchique hcpc
     Cet essai n'est pas très concluant, on ne parvient pas avec cette méthode à bien distinguer deux groupes
  - Réalisation d'une AFM (analyse factorielle multiple)
