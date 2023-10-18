@@ -2,7 +2,7 @@
 
 As part of our advanced modeling course, we've created a project to study customer satisfaction among scooter users.
 
-## Project: Scooter user satisfaction.
+## Project: Scooter users satisfaction.
 
 File: scooter.xls
 
