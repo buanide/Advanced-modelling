@@ -22,4 +22,9 @@ Several importance variables (score from 1 to 5) given by users to different cha
  - Hierarchical clustering hcpc
     This test was not very conclusive, as the method failed to distinguish between two groups.
  - Performing MFA (multiple factor analysis)
-    Since we have both quantitative and qualitative data, the afm method enables us to study all the data simultaneously. The results are more satisfactory than those obtained before. 
+    Since we have both quantitative and qualitative data, the afm method enables us to study all the data simultaneously. The results are more satisfactory than those obtained before.
+
+## Results
+
+First, whe have found out 4 groups in our database. We have seen similitudes between the 2 first group who are men who prefer innovative scooters that look like motorbike with big engines, and that are sober and low key. These men are either of the middle or the upper class. Next, the analysis allowed us to see that women prefer scooter with smaller engines and that are fashionable. 
+
