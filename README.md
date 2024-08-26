@@ -1,6 +1,9 @@
 # Advanced modeling
 
-As part of our advanced modeling course, we've created a project to study customer satisfaction among scooter users.
+As part of our advanced modeling course, we've created a project to study customer satisfaction among scooter users: 
+- The "rapport" directory contains the report of this study written in french.
+- The code directory contains the code used to realize our analysis
+- The data directory contains the data used to do the analysis
 
 ## Project: Scooter users satisfaction.
 
@@ -26,5 +29,4 @@ Several importance variables (score from 1 to 5) given by users to different cha
 
 ## Results
 
-First, whe have found out 4 groups in our database. We have seen similitudes between the 2 first group who are men who prefer innovative scooters that look like motorbike with big engines, and that are sober and low key. These men are either of the middle or the upper class. Next, the analysis allowed us to see that women prefer scooter with smaller engines and that are fashionable. 
-
+First, whe have identified 4 groups in our database. We have seen similitudes between the 2 first groups composed of men who prefer high-performance scooters with motercycle-like design. These men, typically from middle to upper-class backgrounds prioritize new technology. In contrast, women often express a preference for smaller, more stylish scooters.
