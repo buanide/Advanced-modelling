@@ -1,6 +1,6 @@
 # Advanced modeling
 
-As part of our advanced modeling course, we've created a project to study customer satisfaction among scooter users: 
+As part of our advanced statistical modeling course, we've created a project to study customer satisfaction among scooter users: 
 - The "rapport" directory contains the report of this study written in french.
 - The code directory contains the code used to realize our analysis
 - The data directory contains the data used to do the analysis
