@@ -25,7 +25,8 @@ Several importance variables (score from 1 to 5) given by users to different cha
  - Hierarchical clustering hcpc
     This test was not very conclusive, as the method failed to distinguish between two groups.
  - Performing MFA (multiple factor analysis)
-    Since we have both quantitative and qualitative data, the afm method enables us to study all the data simultaneously. The results are more satisfactory than those obtained before.
+    Since we have both quantitative and qualitative data, the afm method enables us to study all the data simultaneously.
+ - Performing PCA also revealed also different insights between men and women
 
 ## Results
 
